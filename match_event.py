@@ -25,7 +25,7 @@ if uploaded_file is not None:
 
 
     # Date selection
-    st.subheader('בחרי את התאריכים אותם את רוצה שהדוח הסופי יציג')
+    st.subheader('בחרי את התאריך אותם את רוצה שהדוח הסופי יציג')
     min_date = detailed_report['Date.1'].min()
     max_date = detailed_report['Date.1'].max()
     start_date, end_date = st.date_input(
