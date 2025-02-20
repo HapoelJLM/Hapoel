@@ -44,9 +44,13 @@ if uploaded_file is not None:
     agg_file = (
         detailed_report[['User Id', 'Price']]
         .groupby('User Id')
-        .sum()
+        .agg(
+            Price=('Price', 'sum'),
+            Total_Tickets=('Price', 'count')  # Counts the number of transactions
+        )
         .reset_index()
     )
+
 
     agg_file = agg_file.merge(
         detailed_report[['User Id', 'Fan / Company']].drop_duplicates(subset='User Id'),
@@ -54,7 +58,7 @@ if uploaded_file is not None:
         how='left'
     )
 
-    agg_file = agg_file[['Fan / Company', 'User Id', 'Price']]
+    agg_file = agg_file[['Fan / Company', 'User Id', 'Price','Total_Tickets']]
 
     # show the data
     st.dataframe(agg_file, height=600)
