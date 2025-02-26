@@ -88,46 +88,46 @@ if uploaded_file is not None:
         st.warning("לא נמצאו נתוני הגעה")
         st.stop()  
 
-st.subheader(" האם ברצונך למחוק שורות מהטבלה?")
-delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
+    st.subheader(" האם ברצונך למחוק שורות מהטבלה?")
+    delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
 
-# if delete_mode == "למחוק שורות מסוימות":
-#     delete_indices = st.text_input("הכנס מספרי שורות למחיקה (מופרדים בפסיק)", "")
+    if delete_mode == "למחוק שורות מסוימות":
+        delete_indices = st.text_input("הכנס מספרי שורות למחיקה (מופרדים בפסיק)", "")
 
-#     if delete_indices:
-#         try:
-#             # Convert input into a list of integers
-#             indices_to_delete = [int(i.strip()) for i in delete_indices.split(",")]
+        if delete_indices:
+            try:
+                # Convert input into a list of integers
+                indices_to_delete = [int(i.strip()) for i in delete_indices.split(",")]
 
-#             # Check if indices exist in DataFrame
-#             if all(i in attendance_data.index for i in indices_to_delete):
-#                 # Remove rows based on index
-#                 attendance_data = attendance_data.drop(indices_to_delete).reset_index(drop=True)
+                # Check if indices exist in DataFrame
+                if all(i in attendance_data.index for i in indices_to_delete):
+                    # Remove rows based on index
+                    attendance_data = attendance_data.drop(indices_to_delete).reset_index(drop=True)
 
-#                 st.success("✅ השורות שנבחרו נמחקו בהצלחה!")
-#                 st.write(attendance_data)  # Show updated table
-#             else:
-#                 st.error("אחת או יותר מהשורות שסיפקת אינה קיימת. נסה שוב.")
-#         except ValueError:
-#             st.error("יש להכניס מספרים מופרדים בפסיק בלבד.")
+                    st.success("✅ השורות שנבחרו נמחקו בהצלחה!")
+                    st.write(attendance_data)  # Show updated table
+                else:
+                    st.error("אחת או יותר מהשורות שסיפקת אינה קיימת. נסה שוב.")
+            except ValueError:
+                st.error("יש להכניס מספרים מופרדים בפסיק בלבד.")
 
-attendance_data = auth.groupby(['Fan/Company', 'User Id', 'CloseLink reservation name'])['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
-attendance_data.columns = ['Fan/Company', 'User Id', 'CloseLink reservation name', 'count']
-attendance_data = attendance_data[attendance_data['count'] > 0]
+    attendance_data = auth.groupby(['Fan/Company', 'User Id', 'CloseLink reservation name'])['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
+    attendance_data.columns = ['Fan/Company', 'User Id', 'CloseLink reservation name', 'count']
+    attendance_data = attendance_data[attendance_data['count'] > 0]
 
-# Fetch Salesforce Data
-st.subheader('SF מתחבר למערכת')
-with st.spinner('Fetching marketing allowed data...'):
-    filtered_data = fetch_marketing_allowed_from_salesforce(auth)
+    # Fetch Salesforce Data
+    st.subheader('SF מתחבר למערכת')
+    with st.spinner('Fetching marketing allowed data...'):
+        filtered_data = fetch_marketing_allowed_from_salesforce(auth)
 
-if not filtered_data.empty:
-    st.success("התבצע בהצלחה SF החיבור מול")
+    if not filtered_data.empty:
+        st.success("התבצע בהצלחה SF החיבור מול")
 
-    # Merge attendance with Salesforce data
-    merged = attendance_data.merge(filtered_data, on='User Id', how='inner')
-    merged = merged[['Fan/Company', 'Account Name', 'User Id', 'CloseLink reservation name', 'Marketing Allowed']]
+        # Merge attendance with Salesforce data
+        merged = attendance_data.merge(filtered_data, on='User Id', how='inner')
+        merged = merged[['Fan/Company', 'Account Name', 'User Id', 'CloseLink reservation name', 'Marketing Allowed']]
 
-    st.subheader("אנשים שהגיעו למשחק ואישרו דיוור")
-    st.write(merged)
-else:
-    st.warning("לא נמצאו נתונים תואמים במערכת Salesforce.")
+        st.subheader("אנשים שהגיעו למשחק ואישרו דיוור")
+        st.write(merged)
+    else:
+        st.warning("לא נמצאו נתונים תואמים במערכת Salesforce.")
