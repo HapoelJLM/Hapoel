@@ -65,31 +65,142 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
 
     return filtered_data
 
-# Streamlit UI
-st.title('דוח קהילה ')
-st.subheader('אנא להעלות את דוח המשחק המלא')
 
-uploaded_file = st.file_uploader('CSV בחר קובץ', type="csv")
+st.markdown(
+    """
+    <style>
+    .stApp {
+        color: white;
+        text-shadow: 2px 2px 4px black;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+        color: white !important;
+        text-shadow: 2px 2px 4px black !important;
+    }
+
+    a {
+        color: cyan !important;
+        font-weight: bold;
+    }
+
+   /* File uploader label styling */
+    div[data-testid="stFileUploader"] label {
+        color: white !important;
+        text-shadow: 2px 2px 4px black !important;
+        font-weight: bold;
+        font-size: 24px !important; /* Makes text bigger */
+        text-align: center !important;
+        display: flex;
+    }
+
+    /* Style the file uploader box and center it */
+    div[data-testid="stFileUploader"] section {
+        padding: 8px !important;  /* Reduce padding for a thin appearance */
+        border: 2px solid white !important;  /* Add a clean white border */
+        border-radius: 25px !important;  /* Rounded edges to mimic a search bar */
+        background-color: rgba(255, 255, 255, 0.2) !important; /* Semi-transparent background */
+        width: 400px !important; /* Adjust width */
+        height: 40px !important; /* Make it thinner */
+        text-align: center !important;
+        justify-content: center !important;
+        align-items: center !important;
+        display: flex !important;
+        margin: auto !important;  /* Center the uploader */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Streamlit UI
+st.markdown("<h1 style='text-align: center;'> דוח קהילה</h1>", unsafe_allow_html=True)
+
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/HAP08989.JPG");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+
+st.markdown("<h2 style='text-align: right;'>הוראות כיצד להוריד את הדוח הרצוי ממערכת רובוטיקט</h2>", unsafe_allow_html=True)
+
+# Step 1: Login
+st.markdown("<h4 style='text-align: right;'>בעזרת הלינק Roboticket התחבר/י למערכת</h4>", unsafe_allow_html=True)
+st.markdown(
+    "<h4 style='text-align: right;'><a href='https://tickets.hapoel.co.il/Boxoffice' target='_blank'>https://tickets.hapoel.co.il/Boxoffice</a></h4>", 
+    unsafe_allow_html=True
+)
+st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png", use_container_width=True)
+
+# Step 2: Reports section
+st.markdown("<h4 style='text-align: right;'>לחצ/י על האייקון של הדוחות</h4>", unsafe_allow_html=True)
+st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.26.51.png", use_container_width=True)
+
+#  Step 3: Games Authorization Report
+st.markdown("<h4 style='text-align: right;'>Games authorization report לחצ/י על</h4>", unsafe_allow_html=True)
+st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.29.20.png", use_container_width=True)
+
+# Step 4: Select the game
+st.markdown("<h4 style='text-align: right;'>בחר/י את המשחק הרצוי</h4>", unsafe_allow_html=True)
+st.markdown("<h4 style='text-align: right;'>GETEVENTS אם אינך רואה את המשחק, לחצ/י על כפתור</h4>", unsafe_allow_html=True)
+st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.30.33.png", use_container_width=True)
+
+# Step 5: Download the report
+st.markdown("<h4 style='text-align: right;'>לאחר מציאת המשחק הרצוי, לחצ/י על הכפתור האמצעי כדי להוריד את הדוח</h4>", unsafe_allow_html=True)
+st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.32.40.png", use_container_width=True)
+
+st.markdown("<h4 style='text-align: right;'>אנא העלה/י את דוח המשחק המלא</h4>", unsafe_allow_html=True)
+
+col1, col2, col3 = st.columns([2, 1, 1])  # Adjust column sizes
+with col1:
+    st.write("")  # Empty space
+with col2:
+    st.write("")  # Empty space
+with col3:
+    uploaded_file = st.file_uploader('CSV בחר/י קובץ', type="csv")
 
 if uploaded_file is not None:
-    st.success('!הקובץ הועלה בהצלחה')
+    col1, col2, col3 = st.columns([1, 1, 2])  # Create 3 columns
+    with col1:
+        st.write("")  # Empty space for alignment
+    with col2:
+        st.write("")  # Another empty space
+    with col3:
+        st.success('!הקובץ הועלה בהצלחה')
     
     # Process uploaded CSV file
     auth, attendance_data, distributed_data = process_attendance_data(uploaded_file)
-    attendance_data.reset_index(inplace=True)
 
-    st.subheader(':כמות כרטיסים שהוצאו עבור כל עמותה')
+    st.markdown("<h4 style='text-align: right;'>:כמות הכרטיסים שכל עמותה ביקשה</h4>", unsafe_allow_html=True)
     st.write(distributed_data)
 
-    st.subheader(':כמות אנשים שהגיעו מכל עמותה')
+    st.markdown("<h4 style='text-align: right;'>:כמות האנשים שהגיעו מכל עמותה</h4>", unsafe_allow_html=True)
     st.write(attendance_data)
 
     if attendance_data.empty:
         st.warning("לא נמצאו נתוני הגעה")
         st.stop()  
 
-    st.subheader(" האם ברצונך למחוק שורות מהטבלה?")
-    delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
+    if "delete_done" not in st.session_state:
+        st.session_state.delete_done = False
+
+    st.markdown("<h4 style='text-align: right;'>?האם ברצונך למחוק שורות מהטבלה</h4>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([2, 1, 1])  # Adjust column widths
+    with col1:
+        st.write("")  # Empty space
+    with col2:
+        st.write("")  # Empty space
+    with col3:
+        delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
 
     if delete_mode == "למחוק שורות מסוימות":
         delete_indices = st.text_input("הכנס מספרי שורות למחיקה (מופרדים בפסיק)", "")
@@ -116,18 +227,29 @@ if uploaded_file is not None:
     attendance_data = attendance_data[attendance_data['count'] > 0]
 
     # Fetch Salesforce Data
-    st.subheader('SF מתחבר למערכת')
+    st.markdown("<h2 style='text-align: right;'>SF מתחבר למערכת</h2>", unsafe_allow_html=True)
     with st.spinner('Fetching marketing allowed data...'):
         filtered_data = fetch_marketing_allowed_from_salesforce(auth)
 
     if not filtered_data.empty:
-        st.success("התבצע בהצלחה SF החיבור מול")
+        col1, col2, col3 = st.columns([1, 1, 2])  # Create 3 columns
+        with col1:
+            st.write("")  # Empty space for alignment
+        with col2:
+            st.write("")  # Another empty space
+        with col3:
+            st.success("התבצע בהצלחה SF החיבור מול")
 
         # Merge attendance with Salesforce data
         merged = attendance_data.merge(filtered_data, on='User Id', how='inner')
-        merged = merged[['Fan/Company', 'Account Name', 'User Id', 'CloseLink reservation name', 'Marketing Allowed']]
+        merged = merged[['Fan/Company', 'User Id', 'CloseLink reservation name', 'Marketing Allowed']]
+        merged = merged.rename(columns={'Fan/Company': 'שם מלא'})
+        merged = merged.rename(columns={'CloseLink reservation name': 'שם העמותה'})
+        merged = merged.rename(columns={'Marketing Allowed': 'אישור דיוור'})
+        # merged = merged.rename(columns={'Phone': 'מספר טלפון'})
+        # merged = merged.rename(columns={'MailingAddress': 'כתובת מייל'})
 
-        st.subheader("אנשים שהגיעו למשחק ואישרו דיוור")
+        st.markdown("<h4 style='text-align: right;'>אנשים שהגיעו למשחק ואישרו דיוור</h4>", unsafe_allow_html=True)
         st.write(merged)
     else:
-        st.warning("לא נמצאו נתונים תואמים במערכת Salesforce.")
+        st.warning("SF לא נמצאו נתונים תואמים במערכת")
