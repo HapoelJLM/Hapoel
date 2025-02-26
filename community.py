@@ -16,10 +16,13 @@ def process_attendance_data(csv_file):
     auth['User Id'] = auth['User Id'].fillna(0).astype(int)
 
     distributed = auth.groupby('CloseLink reservation name').size().reset_index(name='Count')
+    distributed = distributed.rename(columns={'CloseLink reservation name': 'שם העמותה'})
+    distributed = distributed.rename(columns={'Count': 'כמות כרטיסים שהוצאו'})
 
-    attendance = auth.groupby(['Fan/Company', 'User Id', 'CloseLink reservation name'])['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
-    attendance.columns = ['Fan/Company', 'User Id', 'CloseLink reservation name', 'count']
-    attendance = attendance[attendance['count'] > 0]
+    attendance = auth.groupby('CloseLink reservation name')['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
+    attendance.columns = ['CloseLink reservation name', 'count']
+    attendance = attendance.rename(columns={'CloseLink reservation name': 'שם העמותה'})
+    attendance = attendance.rename(columns={'count': 'כמות אנשים שהגיעו מכל עמותה'})
 
     return auth, attendance, distributed
 
@@ -73,8 +76,44 @@ if uploaded_file is not None:
     
     # Process uploaded CSV file
     auth, attendance_data, distributed_data = process_attendance_data(uploaded_file)
-    st.subheader(':כמות כרטיסים שהוצאו')
+    attendance_data.reset_index(inplace=True)
+
+    st.subheader(':כמות כרטיסים שהוצאו עבור כל עמותה')
     st.write(distributed_data)
+
+    st.subheader(':כמות אנשים שהגיעו מכל עמותה')
+    st.write(attendance_data)
+
+    if attendance_data.empty:
+        st.warning("לא נמצאו נתוני הגעה")
+        st.stop()  
+
+    st.subheader("📌 האם ברצונך למחוק שורות מהטבלה?")
+    delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
+
+    if delete_mode == "למחוק שורות מסוימות":
+        delete_indices = st.text_input("הכנס מספרי שורות למחיקה (מופרדים בפסיק)", "")
+
+    if delete_indices:
+        try:
+            # Convert input into a list of integers
+            indices_to_delete = [int(i.strip()) for i in delete_indices.split(",")]
+
+            # Check if indices exist in DataFrame
+            if all(i in attendance_data.index for i in indices_to_delete):
+                # Remove rows based on index
+                attendance_data = attendance_data.drop(indices_to_delete).reset_index(drop=True)
+
+                st.success("✅ השורות שנבחרו נמחקו בהצלחה!")
+                st.write(attendance_data)  # Show updated table
+            else:
+                st.error("אחת או יותר מהשורות שסיפקת אינה קיימת. נסה שוב.")
+        except ValueError:
+            st.error("יש להכניס מספרים מופרדים בפסיק בלבד.")
+
+    attendance_data = auth.groupby(['Fan/Company', 'User Id', 'CloseLink reservation name'])['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
+    attendance_data.columns = ['Fan/Company', 'User Id', 'CloseLink reservation name', 'count']
+    attendance_data = attendance_data[attendance_data['count'] > 0]
 
     # Fetch Salesforce Data
     st.subheader('SF מתחבר למערכת')
