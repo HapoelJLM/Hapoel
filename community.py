@@ -251,8 +251,20 @@ if uploaded_file is not None:
     st.write(final_data)
 
     if attendance_data.empty:
-        st.warning("לא נמצאו נתוני הגעה")
-        st.stop()  
+        st.markdown(
+            "<div style='text-align: right; color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px; border: 1px solid #ffeeba;'>⚠️ לא נמצאו כרטיסים שחולקו לעמותות</div>",
+            unsafe_allow_html=True
+        )
+        st.stop()
+
+    # **Check if 'כמות אנשים שהגיעו מכל עמותה' exists and its values are all 0**
+    if 'כמות אנשים שהגיעו מכל עמותה' in final_data.columns and final_data['כמות אנשים שהגיעו מכל עמותה'].sum() == 0:
+        st.markdown(
+            "<div style='text-align: right; color: #856404; background-color: #fff3cd; padding: 10px; border-radius: 5px; border: 1px solid #ffeeba;'>⚠️ לא נמצאו נתוני הגעה</div>",
+            unsafe_allow_html=True
+        )
+        st.stop()
+ 
 
     if "delete_done" not in st.session_state:
         st.session_state.delete_done = False
