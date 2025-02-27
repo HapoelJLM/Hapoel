@@ -46,7 +46,7 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
     for user_id in user_ids:
         soql_query = f"""
                 SELECT Id, Name, Account.Name, Marketing_Allowed__c, 
-                    MobilePhone, Phone, Email, Birthdate
+                    Phone, Email, Birthdate
                 FROM Contact 
                 WHERE HJBC_ID__c = '{user_id}'
             """
@@ -62,7 +62,6 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
                 "Contact Name": record.get("Name", "N/A"),
                 "Account Name": record.get("Account", {}).get("Name", "N/A"),
                 "Marketing Allowed": record.get("marketing_allowed__c", "N/A"),
-                "Mobile Phone": record.get("MobilePhone", "N/A"),
                 "Phone": record.get("Phone", "N/A"),
                 "Email": record.get("Email", "N/A"),
                 "Birthdate": record.get("Birthdate", "N/A")
@@ -244,7 +243,7 @@ uploaded_file = st.file_uploader("", type="csv")
 if uploaded_file is not None:
     st.markdown("<h4 style='text-align: right;'>!הקובץ הועלה בהצלחה</h4>", unsafe_allow_html=True)
 
-# Process uploaded CSV file
+    # Process uploaded CSV file
     auth, attendance_data, distributed_data, final_data = process_attendance_data(uploaded_file)
 
     st.markdown("<h4 style='text-align: right;'>:כרטיסי הקהילה שחולקו לעמותות</h4>", unsafe_allow_html=True)
@@ -270,8 +269,8 @@ if uploaded_file is not None:
         st.session_state.delete_done = False
 
     # **Store attendance_data in session state initially**
-    if "attendance_data" not in st.session_state:
-        st.session_state.attendance_data = attendance_data  # Store initial data
+    if "final_data" not in st.session_state:
+        st.session_state.final_data = final_data  # Store initial data
 
     st.markdown("<h4 style='text-align: right;'>?האם ברצונך למחוק שורות מהטבלה</h4>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([2, 1, 1])  # Adjust column widths
@@ -282,9 +281,9 @@ if uploaded_file is not None:
     with col3:
         delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
 
-     # **Ensure attendance_data is stored in session state**
-    if "attendance_data" not in st.session_state:
-        st.session_state.attendance_data = final_data  # Store initial data
+     # **Ensure final_data is stored in session state**
+    if "final_data" not in st.session_state:
+        st.session_state.final_data = final_data  # Store initial data
 
     # **If user chooses to delete rows**
     if delete_mode == "למחוק שורות מסוימות":
@@ -307,16 +306,16 @@ if uploaded_file is not None:
             except ValueError:
                 st.error("יש להכניס מספרים מופרדים בפסיק בלבד.")
 
-    # **Process the attendance data FIRST**
-    final_data = auth.groupby(
-        ['CloseLink reservation name', 'Fan/Company', 'User Id']
-    )['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
+    # **Group by and process the updated final_data**
+    temp = final_data.merge(auth, left_on='שם העמותה', right_on='CloseLink reservation name', how='left')
+    temp = temp[temp['Attendance'] == 'Yes']
+    final_data = temp.copy()
 
     # **Rename columns for clarity**
-    final_data.columns = ['CloseLink reservation name', 'Fan/Company', 'User Id', 'count']
+    # final_data = [['שם העמותה', 'Fan/Company', 'User Id']]
 
     # **Filter out rows where count is 0**
-    final_data = final_data[final_data['count'] > 0]
+    # final_data = final_data[final_data['count'] > 0]
 
     # **Now, store the processed DataFrame into session state**
     st.session_state.final_data = final_data
@@ -337,8 +336,8 @@ if uploaded_file is not None:
         # Merge attendance with Salesforce data
         merged = final_data.merge(filtered_data, on='User Id', how='inner')
         # Select relevant columns, including new ones
-        merged = merged[['Fan/Company', 'User Id', 'CloseLink reservation name', 
-                        'Marketing Allowed', 'Mobile Phone', 'Phone', 'Email', 'Birthdate']]
+        merged = merged[['Fan/Company', 'User Id', 'שם העמותה', 
+                        'Marketing Allowed', 'Phone', 'Email', 'Birthdate']]
         
         # Calculate age from Birthdate
         current_year = datetime.today().year
@@ -356,10 +355,9 @@ if uploaded_file is not None:
         # Rename columns for better readability (Hebrew-friendly)
         merged = merged.rename(columns={
             'Fan/Company': 'שם מלא',
-            'CloseLink reservation name': 'שם העמותה',
+            # 'CloseLink reservation name': 'שם העמותה',
             'Marketing Allowed': 'אישור דיוור',
-            'Mobile Phone': 'טלפון נייד',
-            'Phone': 'טלפון נוסף',
+            'Phone': 'טלפון נייד',
             'Email': 'כתובת אימייל',
             'Age': 'גיל'
         })
