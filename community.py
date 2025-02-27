@@ -17,14 +17,17 @@ def process_attendance_data(csv_file):
 
     distributed = auth.groupby('CloseLink reservation name').size().reset_index(name='Count')
     distributed = distributed.rename(columns={'CloseLink reservation name': 'שם העמותה'})
-    distributed = distributed.rename(columns={'Count': 'כמות כרטיסים שהוצאו'})
+    distributed = distributed.rename(columns={'Count': 'כמות כרטיסים שנמשכו'})
 
     attendance = auth.groupby('CloseLink reservation name')['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
     attendance.columns = ['CloseLink reservation name', 'count']
     attendance = attendance.rename(columns={'CloseLink reservation name': 'שם העמותה'})
     attendance = attendance.rename(columns={'count': 'כמות אנשים שהגיעו מכל עמותה'})
 
-    return auth, attendance, distributed
+    final_table = pd.merge(distributed, attendance, on='שם העמותה', how='left')
+    final_table[['כמות כרטיסים שנמשכו', 'כמות אנשים שהגיעו מכל עמותה']] = final_table[['כמות כרטיסים שנמשכו', 'כמות אנשים שהגיעו מכל עמותה']].astype(int)
+
+    return auth, attendance, distributed, final_table
 
 # Function to fetch marketing allowed data from Salesforce
 def fetch_marketing_allowed_from_salesforce(auth_df):
@@ -41,7 +44,12 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
     results = []
 
     for user_id in user_ids:
-        soql_query = f"SELECT Id, Name, Account.Name, Marketing_Allowed__c FROM Contact WHERE HJBC_ID__c = '{user_id}'"
+        soql_query = f"""
+                SELECT Id, Name, Account.Name, Marketing_Allowed__c, 
+                    MobilePhone, Phone, Email, Birthdate
+                FROM Contact 
+                WHERE HJBC_ID__c = '{user_id}'
+            """
         query_url = f"{instance_url}/services/data/v57.0/query?q={soql_query}"
 
         response = requests.get(query_url, headers=headers)
@@ -49,14 +57,16 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
         if response.status_code == 200:
             contacts = response.json().get("records", [])
             for record in contacts:
-                marketing_allowed = record.get("marketing_allowed__c")
-                if marketing_allowed:  # Only add if the checkbox is checked
-                    results.append({
-                        "User Id": user_id,
-                        "Contact Name": record.get("Name", "N/A"),
-                        "Account Name": record.get("Account", {}).get("Name", "N/A"),
-                        "Marketing Allowed": marketing_allowed
-                    })
+                results.append({
+                "User Id": user_id,
+                "Contact Name": record.get("Name", "N/A"),
+                "Account Name": record.get("Account", {}).get("Name", "N/A"),
+                "Marketing Allowed": record.get("marketing_allowed__c", "N/A"),
+                "Mobile Phone": record.get("MobilePhone", "N/A"),
+                "Phone": record.get("Phone", "N/A"),
+                "Email": record.get("Email", "N/A"),
+                "Birthdate": record.get("Birthdate", "N/A")
+            })
         else:
             st.error(f"Error fetching data for User ID {user_id}: {response.text}")
 
@@ -65,15 +75,25 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
 
     return filtered_data
 
+# UI
 
+# Initialize session state for file handling
+if "uploaded_file" not in st.session_state:
+    st.session_state.uploaded_file = None
+
+# **Page Styling**
 st.markdown(
     """
     <style>
     .stApp {
+        background-image: url("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/HAP08989.JPG");
+        background-size: cover;
+        background-position: center;
+        background-repeat: no-repeat;
         color: white;
         text-shadow: 2px 2px 4px black;
     }
-    
+
     h1, h2, h3, h4, h5, h6 {
         color: white !important;
         text-shadow: 2px 2px 4px black !important;
@@ -84,54 +104,114 @@ st.markdown(
         font-weight: bold;
     }
 
-   /* File uploader label styling */
+    /* Make radio button labels white */
+    div[data-baseweb="radio"] label {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 1px 1px 2px black !important;
+    }
+
+    /* Ensure radio button text is readable */
+    div[data-baseweb="radio"] div {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 1px 1px 2px black !important;
+    }
+
+    /* Make radio button title (the question) white */
+    div[data-testid="stRadio"] > label {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 1px 1px 2px black !important;
+    }
+
+    /* Make radio button options white */
+    div[data-baseweb="radio"] label {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 1px 1px 2px black !important;
+    }
+
+    /* Ensure selected option text stays white */
+    div[role="radiogroup"] > div {
+        color: white !important;
+    }
+
+    /* Apply white color to all radio text */
+    div[role="radiogroup"] * {
+        color: white !important;
+    }
+    
+    /* Fix issue where selected option text stays dark */
+    div[role="radiogroup"] > div {
+        color: white !important;
+    }
+
+    /* Ensure contrast and visibility */
+    div[role="radiogroup"] * {
+        color: white !important;
+    }
+
+/* Align text input label to the right */
+    div[data-testid="stTextInput"] label {
+        color: white !important;
+        font-weight: bold !important;
+        text-shadow: 1px 1px 2px black !important;
+        text-align: right !important;
+        display: block !important;
+    }
+
+    /* Align input text inside the box to the right */
+    div[data-testid="stTextInput"] input {
+        text-align: right !important;
+        direction: rtl !important;
+    }
+
+    /* Center file uploader */
+    div[data-testid="stFileUploader"] {
+        display: flex;
+        justify-content: center !important;
+        align-items: center !important;
+    }
+
     div[data-testid="stFileUploader"] label {
         color: white !important;
         text-shadow: 2px 2px 4px black !important;
         font-weight: bold;
-        font-size: 24px !important; /* Makes text bigger */
+        font-size: 24px !important;
         text-align: center !important;
-        display: flex;
+        display: block;
     }
 
-    /* Style the file uploader box and center it */
     div[data-testid="stFileUploader"] section {
-        padding: 8px !important;  /* Reduce padding for a thin appearance */
-        border: 2px solid white !important;  /* Add a clean white border */
-        border-radius: 25px !important;  /* Rounded edges to mimic a search bar */
-        background-color: rgba(255, 255, 255, 0.2) !important; /* Semi-transparent background */
-        width: 400px !important; /* Adjust width */
-        height: 40px !important; /* Make it thinner */
+        padding: 12px !important;
+        border: 2px solid white !important;
+        border-radius: 25px !important;
+        background-color: rgba(255, 255, 255, 0.2) !important;
+        width: 400px !important;
+        height: 50px !important;
         text-align: center !important;
         justify-content: center !important;
         align-items: center !important;
         display: flex !important;
-        margin: auto !important;  /* Center the uploader */
+        margin: auto !important;
+    }
+
+    div[data-testid="stFileUploader"] section div {
+        color: white !important; 
+        font-weight: bold !important;
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
-# Streamlit UI
+# **Page Title**
 st.markdown("<h1 style='text-align: center;'> דוח קהילה</h1>", unsafe_allow_html=True)
 
-st.markdown(
-    """
-    <style>
-    .stApp {
-        background-image: url("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/HAP08989.JPG");
-        background-size: cover;
-        background-position: center;
-        background-repeat: no-repeat;
-    }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-
 st.markdown("<h2 style='text-align: right;'>הוראות כיצד להוריד את הדוח הרצוי ממערכת רובוטיקט</h2>", unsafe_allow_html=True)
+
+st.markdown("<br>", unsafe_allow_html=True)
 
 # Step 1: Login
 st.markdown("<h4 style='text-align: right;'>בעזרת הלינק Roboticket התחבר/י למערכת</h4>", unsafe_allow_html=True)
@@ -159,32 +239,16 @@ st.markdown("<h4 style='text-align: right;'>לאחר מציאת המשחק הר�
 st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.32.40.png", use_container_width=True)
 
 st.markdown("<h4 style='text-align: right;'>אנא העלה/י את דוח המשחק המלא</h4>", unsafe_allow_html=True)
-
-col1, col2, col3 = st.columns([2, 1, 1])  # Adjust column sizes
-with col1:
-    st.write("")  # Empty space
-with col2:
-    st.write("")  # Empty space
-with col3:
-    uploaded_file = st.file_uploader('CSV בחר/י קובץ', type="csv")
+uploaded_file = st.file_uploader("", type="csv")
 
 if uploaded_file is not None:
-    col1, col2, col3 = st.columns([1, 1, 2])  # Create 3 columns
-    with col1:
-        st.write("")  # Empty space for alignment
-    with col2:
-        st.write("")  # Another empty space
-    with col3:
-        st.success('!הקובץ הועלה בהצלחה')
-    
-    # Process uploaded CSV file
-    auth, attendance_data, distributed_data = process_attendance_data(uploaded_file)
+    st.markdown("<h4 style='text-align: right;'>!הקובץ הועלה בהצלחה</h4>", unsafe_allow_html=True)
 
-    st.markdown("<h4 style='text-align: right;'>:כמות הכרטיסים שכל עמותה ביקשה</h4>", unsafe_allow_html=True)
-    st.write(distributed_data)
+# Process uploaded CSV file
+    auth, attendance_data, distributed_data, final_data = process_attendance_data(uploaded_file)
 
-    st.markdown("<h4 style='text-align: right;'>:כמות האנשים שהגיעו מכל עמותה</h4>", unsafe_allow_html=True)
-    st.write(attendance_data)
+    st.markdown("<h4 style='text-align: right;'>:כרטיסי הקהילה שחולקו לעמותות</h4>", unsafe_allow_html=True)
+    st.write(final_data)
 
     if attendance_data.empty:
         st.warning("לא נמצאו נתוני הגעה")
@@ -192,6 +256,10 @@ if uploaded_file is not None:
 
     if "delete_done" not in st.session_state:
         st.session_state.delete_done = False
+
+    # **Store attendance_data in session state initially**
+    if "attendance_data" not in st.session_state:
+        st.session_state.attendance_data = attendance_data  # Store initial data
 
     st.markdown("<h4 style='text-align: right;'>?האם ברצונך למחוק שורות מהטבלה</h4>", unsafe_allow_html=True)
     col1, col2, col3 = st.columns([2, 1, 1])  # Adjust column widths
@@ -202,6 +270,11 @@ if uploaded_file is not None:
     with col3:
         delete_mode = st.radio(":בחר באחת מהאפשרויות", ["לא למחוק", "למחוק שורות מסוימות"])
 
+     # **Ensure attendance_data is stored in session state**
+    if "attendance_data" not in st.session_state:
+        st.session_state.attendance_data = final_data  # Store initial data
+
+    # **If user chooses to delete rows**
     if delete_mode == "למחוק שורות מסוימות":
         delete_indices = st.text_input("הכנס מספרי שורות למחיקה (מופרדים בפסיק)", "")
 
@@ -211,25 +284,34 @@ if uploaded_file is not None:
                 indices_to_delete = [int(i.strip()) for i in delete_indices.split(",")]
 
                 # Check if indices exist in DataFrame
-                if all(i in attendance_data.index for i in indices_to_delete):
+                if all(i in final_data.index for i in indices_to_delete):
                     # Remove rows based on index
-                    attendance_data = attendance_data.drop(indices_to_delete).reset_index(drop=True)
+                    final_data = final_data.drop(indices_to_delete).reset_index(drop=True)
 
-                    st.success("✅ השורות שנבחרו נמחקו בהצלחה!")
-                    st.write(attendance_data)  # Show updated table
+                    st.markdown("<h4 style='text-align: right;'>!השורות שנבחרו נמחקו בהצלחה</h4>", unsafe_allow_html=True)
+                    st.write(final_data)  # Show updated table
                 else:
                     st.error("אחת או יותר מהשורות שסיפקת אינה קיימת. נסה שוב.")
             except ValueError:
                 st.error("יש להכניס מספרים מופרדים בפסיק בלבד.")
 
-    attendance_data = auth.groupby(['Fan/Company', 'User Id', 'CloseLink reservation name'])['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
-    attendance_data.columns = ['Fan/Company', 'User Id', 'CloseLink reservation name', 'count']
-    attendance_data = attendance_data[attendance_data['count'] > 0]
+    # **Process the attendance data FIRST**
+    final_data = auth.groupby(
+        ['CloseLink reservation name', 'Fan/Company', 'User Id']
+    )['Attendance'].apply(lambda x: (x == 'Yes').sum()).reset_index()
 
-    # Fetch Salesforce Data
+    # **Rename columns for clarity**
+    final_data.columns = ['CloseLink reservation name', 'Fan/Company', 'User Id', 'count']
+
+    # **Filter out rows where count is 0**
+    final_data = final_data[final_data['count'] > 0]
+
+    # **Now, store the processed DataFrame into session state**
+    st.session_state.final_data = final_data
+
     st.markdown("<h2 style='text-align: right;'>SF מתחבר למערכת</h2>", unsafe_allow_html=True)
     with st.spinner('Fetching marketing allowed data...'):
-        filtered_data = fetch_marketing_allowed_from_salesforce(auth)
+        filtered_data = fetch_marketing_allowed_from_salesforce(st.session_state.final_data)
 
     if not filtered_data.empty:
         col1, col2, col3 = st.columns([1, 1, 2])  # Create 3 columns
@@ -238,18 +320,39 @@ if uploaded_file is not None:
         with col2:
             st.write("")  # Another empty space
         with col3:
-            st.success("התבצע בהצלחה SF החיבור מול")
+            st.markdown("<h4 style='text-align: right;'>התבצע בהצלחה SF החיבור מול </h4>", unsafe_allow_html=True)
 
         # Merge attendance with Salesforce data
-        merged = attendance_data.merge(filtered_data, on='User Id', how='inner')
-        merged = merged[['Fan/Company', 'User Id', 'CloseLink reservation name', 'Marketing Allowed']]
-        merged = merged.rename(columns={'Fan/Company': 'שם מלא'})
-        merged = merged.rename(columns={'CloseLink reservation name': 'שם העמותה'})
-        merged = merged.rename(columns={'Marketing Allowed': 'אישור דיוור'})
-        # merged = merged.rename(columns={'Phone': 'מספר טלפון'})
-        # merged = merged.rename(columns={'MailingAddress': 'כתובת מייל'})
+        merged = final_data.merge(filtered_data, on='User Id', how='inner')
+        # Select relevant columns, including new ones
+        merged = merged[['Fan/Company', 'User Id', 'CloseLink reservation name', 
+                        'Marketing Allowed', 'Mobile Phone', 'Phone', 'Email', 'Birthdate']]
+        
+        # Calculate age from Birthdate
+        current_year = datetime.today().year
 
-        st.markdown("<h4 style='text-align: right;'>אנשים שהגיעו למשחק ואישרו דיוור</h4>", unsafe_allow_html=True)
+        # Convert Birthdate to datetime and extract the year
+        merged['Birthdate'] = pd.to_datetime(merged['Birthdate'], errors='coerce')
+        merged['Age'] = current_year - merged['Birthdate'].dt.year
+
+        # Replace NaN values in Age with 'Unknown' if Birthdate is missing
+        merged['Age'] = merged['Age'].fillna(0).astype(int)
+
+        # Drop the original Birthdate column
+        merged = merged.drop(columns=['Birthdate'])
+        
+        # Rename columns for better readability (Hebrew-friendly)
+        merged = merged.rename(columns={
+            'Fan/Company': 'שם מלא',
+            'CloseLink reservation name': 'שם העמותה',
+            'Marketing Allowed': 'אישור דיוור',
+            'Mobile Phone': 'טלפון נייד',
+            'Phone': 'טלפון נוסף',
+            'Email': 'כתובת אימייל',
+            'Age': 'גיל'
+        })
+
+        st.markdown("<h4 style='text-align: right;'>אנשים שהגיעו למשחק</h4>", unsafe_allow_html=True)
         st.write(merged)
     else:
         st.warning("SF לא נמצאו נתונים תואמים במערכת")
