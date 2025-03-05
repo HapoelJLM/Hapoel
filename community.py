@@ -33,6 +33,7 @@ def process_attendance_data(csv_file):
 def fetch_marketing_allowed_from_salesforce(auth_df):
     sf = Salesforce(username='gil@hapoel.co.il', password='G!l123!@#(:)', security_token='EDzK6fZg9oaOdeAn8bFMwVyYY')
 
+
     instance_url = sf.base_url.split('/services/data')[0]
 
     headers = {
@@ -332,6 +333,7 @@ if uploaded_file is not None:
             st.write("")  # Another empty space
         with col3:
             st.markdown("<h4 style='text-align: right;'>התבצע בהצלחה SF החיבור מול </h4>", unsafe_allow_html=True)
+
 
         # Merge attendance with Salesforce data
         merged = final_data.merge(filtered_data, on='User Id', how='inner')
