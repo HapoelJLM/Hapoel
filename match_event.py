@@ -43,7 +43,7 @@ if uploaded_file is not None:
 
     agg_file = (
         detailed_report[['User Id', 'Price']]
-        .groupby('User Id')
+        .groupby('User Id', dropna=False)
         .agg(
             Price=('Price', 'sum'),
             Total_Tickets=('Price', 'count')  # Counts the number of transactions
