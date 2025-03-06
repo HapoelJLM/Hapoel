@@ -14,11 +14,6 @@ username = os.getenv("FGB_CLIENT_AGENCYCODE")
 password = os.getenv("FGB_CLIENT_APIKEY")
 
 def fetch_all_data(from_datetime, to_datetime):
-
-    auth_string = f"{username}:{password}"
-    auth_encoded = base64.b64encode(auth_string.encode()).decode()
-
-def fetch_all_data(from_datetime, to_datetime):
     
     auth_string = f"{username}:{password}"
     auth_encoded = base64.b64encode(auth_string.encode()).decode()
