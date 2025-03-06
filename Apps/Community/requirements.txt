@@ -1,0 +1,7 @@
+streamlit
+pandas
+xlsxwriter
+requests
+simple_salesforce
+python-dotenv
+os
