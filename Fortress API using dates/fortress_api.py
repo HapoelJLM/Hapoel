@@ -8,10 +8,13 @@ from cryptography.fernet import Fernet
 import os
 from dotenv import load_dotenv
 
+print(os.environ)  # This will print all environment variables (for debugging)
+
+# dotenv_path = "/Users/gilmalichi/Hapoel/Fortress API using dates/.env"
 load_dotenv()
 
-username = os.getenv("FGB_CLIENT_AGENCYCODE")
-password = os.getenv("FGB_CLIENT_APIKEY")
+username = os.getenv("FGB_CLIENT_AGENCYCODE") 
+password = os.getenv("FGB_CLIENT_APIKEY") 
 
 def fetch_all_data(from_datetime, to_datetime):
     
@@ -47,6 +50,8 @@ def fetch_all_data(from_datetime, to_datetime):
         print(f"Requesting Page {page_number}...")
 
         response = requests.post(url, json=payload, headers=headers)
+        print("Response Code:", response.status_code)
+        print("Response Text:", response.text)
         
         if response.status_code != 200:
             print(f"Error: Received HTTP {response.status_code}")
@@ -79,12 +84,17 @@ def fetch_all_data(from_datetime, to_datetime):
         if page_number > total_pages:
             break
 
-    return pd.DataFrame(all_data)
+    df = pd.DataFrame(all_data)
+
+    # Ensure only required columns exist
+    required_columns = ['attendanceID', 'attendanceDatetime', 'ticketNumber', 'turnstileName', 'gateCode', 'failureReason']
+    df = df[[col for col in required_columns if col in df.columns]]
+
+    return df
     
 from_datetime = "2025-03-02 09:00:00.000"
 to_datetime = "2025-03-02 21:00:00.000"
 
-df_users = fetch_all_data(from_datetime, to_datetime)
-# df_users = df_users[['attendanceID', 'attendanceDatetime', 'ticketNumber', 'turnstileName', 'gateCode', 'failureReason']]
+df = fetch_all_data(from_datetime, to_datetime)
 
-print(df_users)
+print(df)
