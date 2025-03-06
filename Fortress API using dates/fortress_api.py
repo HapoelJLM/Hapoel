@@ -36,9 +36,9 @@ def fetch_all_data(from_datetime, to_datetime):
     while True:
         payload = {
             "Header": {
-                "Client_AppID": "com.HPJBB",
-                "Client_APIKey": "37AF541A-C2BC-4578-8303-3D064C622263",
-                "Client_AgencyCode": "HPJBB",
+                "Client_AppID": "",
+                "Client_APIKey": "",
+                "Client_AgencyCode": "",
                 "UniqID": 1
             },
             "FromDateTime": from_datetime,
