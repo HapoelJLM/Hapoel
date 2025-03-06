@@ -4,6 +4,8 @@ from datetime import datetime
 import io
 import requests
 from simple_salesforce import Salesforce
+import os
+from dotenv import load_dotenv
 
 def process_attendance_data(csv_file):
     auth = pd.read_csv(csv_file)
@@ -31,8 +33,17 @@ def process_attendance_data(csv_file):
 
 # Function to fetch marketing allowed data from Salesforce
 def fetch_marketing_allowed_from_salesforce(auth_df):
-    sf = Salesforce(username='gil@hapoel.co.il', password='G!l123!@#(:)', security_token='EDzK6fZg9oaOdeAn8bFMwVyYY')
+    load_dotenv()
 
+    sf_username = os.getenv("SF_USERNAME")
+    sf_password = os.getenv("SF_PASSWORD")
+    sf_security_token = os.getenv("SF_SECURITY_TOKEN")
+
+    sf = Salesforce(
+    username=sf_username,
+    password=sf_password,
+    security_token=sf_security_token,
+    )
 
     instance_url = sf.base_url.split('/services/data')[0]
 
@@ -219,7 +230,9 @@ st.markdown(
     "<h4 style='text-align: right;'><a href='https://tickets.hapoel.co.il/Boxoffice' target='_blank'>https://tickets.hapoel.co.il/Boxoffice</a></h4>", 
     unsafe_allow_html=True
 )
-st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png", use_container_width=True)
+# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png", use_container_width=True)
+st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png")
+
 
 # Step 2: Reports section
 st.markdown("<h4 style='text-align: right;'>לחצ/י על האייקון של הדוחות</h4>", unsafe_allow_html=True)
