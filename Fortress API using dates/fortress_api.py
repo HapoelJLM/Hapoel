@@ -5,6 +5,18 @@ import time
 import pandas as pd
 import math
 from cryptography.fernet import Fernet
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+
+username = os.getenv("FGB_CLIENT_AGENCYCODE")
+password = os.getenv("FGB_CLIENT_APIKEY")
+
+def fetch_all_data(from_datetime, to_datetime):
+
+    auth_string = f"{username}:{password}"
+    auth_encoded = base64.b64encode(auth_string.encode()).decode()
 
 def fetch_all_data(from_datetime, to_datetime):
     
@@ -78,6 +90,6 @@ from_datetime = "2025-03-02 09:00:00.000"
 to_datetime = "2025-03-02 21:00:00.000"
 
 df_users = fetch_all_data(from_datetime, to_datetime)
-df_users = df_users[['attendanceID', 'attendanceDatetime', 'ticketNumber', 'turnstileName', 'gateCode', 'failureReason']]
+# df_users = df_users[['attendanceID', 'attendanceDatetime', 'ticketNumber', 'turnstileName', 'gateCode', 'failureReason']]
 
-df_users
+print(df_users)
