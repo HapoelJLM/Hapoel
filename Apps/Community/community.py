@@ -69,20 +69,27 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
         if response.status_code == 200:
             contacts = response.json().get("records", [])
             for record in contacts:
+                try:
+                    account_name = record["Account"]["Name"]
+                except (TypeError, KeyError):
+                    account_name = "N/A"
+
                 results.append({
-                "User Id": user_id,
-                "Contact Name": record.get("Name", "N/A"),
-                "Account Name": record.get("Account", {}).get("Name", "N/A"),
-                "Marketing Allowed": record.get("marketing_allowed__c", "N/A"),
-                "Phone": record.get("Phone", "N/A"),
-                "Email": record.get("Email", "N/A"),
-                "Birthdate": record.get("Birthdate", "N/A")
-            })
+                    "User Id": user_id,
+                    "Contact Name": record.get("Name", "N/A"),
+                    "Account Name": record.get("Account", {}).get("Name", "N/A") if record.get("Account") else "N/A",
+                    "Marketing Allowed": record.get("Marketing_Allowed__c", "N/A"),  # Fix casing if needed
+                    "Phone": record.get("Phone", "N/A"),
+                    "Email": record.get("Email", "N/A"),
+                    "Birthdate": record.get("Birthdate", "N/A")
+                })
+
         else:
             st.error(f"Error fetching data for User ID {user_id}: {response.text}")
 
     salesforce_data = pd.DataFrame(results)
     filtered_data = salesforce_data.dropna(subset=['Marketing Allowed'])
+    filtered_data = filtered_data[filtered_data['User Id'] != 0]
 
     return filtered_data
 
