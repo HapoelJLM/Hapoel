@@ -57,7 +57,7 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
 
     for user_id in user_ids:
         soql_query = f"""
-                SELECT Id, Name, Account.Name, Marketing_Allowed__c, 
+                SELECT Id, Name, Account.Name, marketing_allowed__c, 
                     Phone, Email, Birthdate
                 FROM Contact 
                 WHERE HJBC_ID__c = '{user_id}'
@@ -78,7 +78,7 @@ def fetch_marketing_allowed_from_salesforce(auth_df):
                     "User Id": user_id,
                     "Contact Name": record.get("Name", "N/A"),
                     "Account Name": record.get("Account", {}).get("Name", "N/A") if record.get("Account") else "N/A",
-                    "Marketing Allowed": record.get("Marketing_Allowed__c", "N/A"),  # Fix casing if needed
+                    "Marketing Allowed": record.get("marketing_allowed__c", "N/A"),  # Fix casing if needed
                     "Phone": record.get("Phone", "N/A"),
                     "Email": record.get("Email", "N/A"),
                     "Birthdate": record.get("Birthdate", "N/A")
@@ -357,6 +357,7 @@ if uploaded_file is not None:
 
         # Merge attendance with Salesforce data
         merged = final_data.merge(filtered_data, on='User Id', how='inner')
+
         # Select relevant columns, including new ones
         merged = merged[['Fan/Company', 'User Id', 'שם העמותה', 
                         'Marketing Allowed', 'Phone', 'Email', 'Birthdate']]
