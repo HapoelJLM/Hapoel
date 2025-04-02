@@ -227,36 +227,36 @@ st.markdown(
 # **Page Title**
 st.markdown("<h1 style='text-align: center;'> דוח קהילה</h1>", unsafe_allow_html=True)
 
-st.markdown("<h2 style='text-align: right;'>הוראות כיצד להוריד את הדוח הרצוי ממערכת רובוטיקט</h2>", unsafe_allow_html=True)
+# st.markdown("<h2 style='text-align: right;'>הוראות כיצד להוריד את הדוח הרצוי ממערכת רובוטיקט</h2>", unsafe_allow_html=True)
 
-st.markdown("<br>", unsafe_allow_html=True)
+# st.markdown("<br>", unsafe_allow_html=True)
 
-# Step 1: Login
-st.markdown("<h4 style='text-align: right;'>בעזרת הלינק Roboticket התחבר/י למערכת</h4>", unsafe_allow_html=True)
-st.markdown(
-    "<h4 style='text-align: right;'><a href='https://tickets.hapoel.co.il/Boxoffice' target='_blank'>https://tickets.hapoel.co.il/Boxoffice</a></h4>", 
-    unsafe_allow_html=True
-)
-# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png", use_container_width=True)
-st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png")
+# # Step 1: Login
+# st.markdown("<h4 style='text-align: right;'>בעזרת הלינק Roboticket התחבר/י למערכת</h4>", unsafe_allow_html=True)
+# st.markdown(
+#     "<h4 style='text-align: right;'><a href='https://tickets.hapoel.co.il/Boxoffice' target='_blank'>https://tickets.hapoel.co.il/Boxoffice</a></h4>", 
+#     unsafe_allow_html=True
+# )
+# # st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png", use_container_width=True)
+# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.19.22.png")
 
 
-# Step 2: Reports section
-st.markdown("<h4 style='text-align: right;'>לחצ/י על האייקון של הדוחות</h4>", unsafe_allow_html=True)
-st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.26.51.png", use_container_width=True)
+# # Step 2: Reports section
+# st.markdown("<h4 style='text-align: right;'>לחצ/י על האייקון של הדוחות</h4>", unsafe_allow_html=True)
+# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.26.51.png", use_container_width=True)
 
-#  Step 3: Games Authorization Report
-st.markdown("<h4 style='text-align: right;'>Games authorization report לחצ/י על</h4>", unsafe_allow_html=True)
-st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.29.20.png", use_container_width=True)
+# #  Step 3: Games Authorization Report
+# st.markdown("<h4 style='text-align: right;'>Games authorization report לחצ/י על</h4>", unsafe_allow_html=True)
+# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.29.20.png", use_container_width=True)
 
-# Step 4: Select the game
-st.markdown("<h4 style='text-align: right;'>בחר/י את המשחק הרצוי</h4>", unsafe_allow_html=True)
-st.markdown("<h4 style='text-align: right;'>GETEVENTS אם אינך רואה את המשחק, לחצ/י על כפתור</h4>", unsafe_allow_html=True)
-st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.30.33.png", use_container_width=True)
+# # Step 4: Select the game
+# st.markdown("<h4 style='text-align: right;'>בחר/י את המשחק הרצוי</h4>", unsafe_allow_html=True)
+# st.markdown("<h4 style='text-align: right;'>GETEVENTS אם אינך רואה את המשחק, לחצ/י על כפתור</h4>", unsafe_allow_html=True)
+# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.30.33.png", use_container_width=True)
 
-# Step 5: Download the report
-st.markdown("<h4 style='text-align: right;'>לאחר מציאת המשחק הרצוי, לחצ/י על הכפתור האמצעי כדי להוריד את הדוח</h4>", unsafe_allow_html=True)
-st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.32.40.png", use_container_width=True)
+# # Step 5: Download the report
+# st.markdown("<h4 style='text-align: right;'>לאחר מציאת המשחק הרצוי, לחצ/י על הכפתור האמצעי כדי להוריד את הדוח</h4>", unsafe_allow_html=True)
+# st.image("https://raw.githubusercontent.com/gil-hapoel/social-icons/main/Screenshot%202025-02-26%20at%2017.32.40.png", use_container_width=True)
 
 st.markdown("<h4 style='text-align: right;'>אנא העלה/י את דוח המשחק המלא</h4>", unsafe_allow_html=True)
 uploaded_file = st.file_uploader("", type="csv")
@@ -329,8 +329,9 @@ if uploaded_file is not None:
 
     # **Group by and process the updated final_data**
     temp = final_data.merge(auth, left_on='שם העמותה', right_on='CloseLink reservation name', how='left')
-    temp = temp[temp['Attendance'] == 'Yes']
-    final_data = temp.copy()
+    tempp = temp.copy()
+    tempp = tempp[tempp['Attendance'] == 'Yes']
+    final_data = tempp.copy()
 
     # **Rename columns for clarity**
     # final_data = [['שם העמותה', 'Fan/Company', 'User Id']]
@@ -387,5 +388,61 @@ if uploaded_file is not None:
 
         st.markdown("<h4 style='text-align: right;'>אנשים שהגיעו למשחק</h4>", unsafe_allow_html=True)
         st.write(merged)
+    else:
+        st.warning("SF לא נמצאו נתונים תואמים במערכת")
+
+
+
+    # ========== אנשים שלא הגיעו למשחק ==========
+    # Step 1: Filter from auth where attendance is NO / False
+    non_attendees_df = auth[auth['Attendance'].astype(str).str.strip().str.lower().isin(['no', 'false'])]
+
+    # Optional: store in session state
+    st.session_state.non_attendees_df = non_attendees_df
+
+    # Step 2: Fetch Salesforce data for these non-attendees
+    with st.spinner('Fetching marketing allowed data for non-attendees...'):
+        filtered_data_na = fetch_marketing_allowed_from_salesforce(non_attendees_df)
+
+    # Step 3: Merge auth (non-attendees) with SF
+    if not filtered_data_na.empty:
+        merged_na = non_attendees_df.merge(filtered_data_na, on='User Id', how='inner')
+        # Filter only those with Marketing Allowed = True
+        merged_na = merged_na[merged_na['Marketing Allowed'] == True]
+
+        # Step 4: Pick relevant columns (if they exist)
+        cols_to_keep = ['Fan/Company', 'User Id', 'CloseLink reservation name', 
+                        'Marketing Allowed', 'Phone', 'Email', 'Birthdate']
+        cols_to_keep = [col for col in cols_to_keep if col in merged_na.columns]
+        merged_na = merged_na[cols_to_keep]
+
+        # Step 5: Age calculation
+        if 'Birthdate' in merged_na.columns:
+            merged_na['Birthdate'] = pd.to_datetime(merged_na['Birthdate'], errors='coerce')
+            merged_na['Age'] = datetime.today().year - merged_na['Birthdate'].dt.year
+            merged_na['Age'] = merged_na['Age'].fillna(0).astype(int)
+            merged_na = merged_na.drop(columns=['Birthdate'])
+        else:
+            merged_na['Age'] = 'לא ידוע'
+
+        # Step 6: Rename for display
+        merged_na = merged_na.rename(columns={
+            'Fan/Company': 'שם מלא',
+            'CloseLink reservation name': 'שם העמותה',
+            'Marketing Allowed': 'אישור דיוור',
+            'Phone': 'טלפון נייד',
+            'Email': 'כתובת אימייל',
+            'Age': 'גיל'
+        })
+
+        # Step 7: Show final clean table
+        final_cols = ['שם מלא', 'User Id', 'שם העמותה', 'אישור דיוור', 'טלפון נייד', 'כתובת אימייל', 'גיל']
+        final_cols = [col for col in final_cols if col in merged_na.columns]
+        merged_na = merged_na.loc[:, ~merged_na.columns.duplicated()]
+        merged_na = merged_na[final_cols]
+
+        st.markdown("<h4 style='text-align: right;'>רשימת אנשים שלא הגיעו למשחק אך משכו כרטיס ואישרו דיוור</h4>", unsafe_allow_html=True)
+        st.write(merged_na)
+
     else:
         st.warning("SF לא נמצאו נתונים תואמים במערכת")
