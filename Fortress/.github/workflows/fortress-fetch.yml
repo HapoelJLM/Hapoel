@@ -1,0 +1,28 @@
+name: Fetch Fortress API Data
+
+on:
+  workflow_dispatch:  # Allows you to trigger it manually from the GitHub UI
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    env:
+      FGB_CLIENT_APPID: ${{ secrets.FGB_CLIENT_APPID }}
+      FGB_CLIENT_APIKEY: ${{ secrets.FGB_CLIENT_APIKEY }}
+      FGB_CLIENT_AGENCYCODE: ${{ secrets.FGB_CLIENT_AGENCYCODE }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas requests
+
+      - name: Run Fortress Script
+        run: python Fortress/fortress_api.py
+
