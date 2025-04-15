@@ -35,9 +35,9 @@ def process_attendance_data(csv_file):
 def fetch_marketing_allowed_from_salesforce(auth_df):
     load_dotenv()
 
-    sf_username = os.getenv("SF_USERNAME")
-    sf_password = os.getenv("SF_PASSWORD")
-    sf_security_token = os.getenv("SF_SECURITY_TOKEN")
+    sf_username = st.secrets["SF_USERNAME"]
+    sf_password = st.secrets["SF_PASSWORD"]
+    sf_security_token = st.secrets["SF_SECURITY_TOKEN"]
 
     sf = Salesforce(
     username=sf_username,
